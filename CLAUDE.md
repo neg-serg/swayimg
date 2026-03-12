@@ -7,3 +7,8 @@
 - N/A (in-memory image caches) (015-fix-swayimg-loader-threading)
 - C++20 (compiled with meson/ninja) + swayimg (local build at `~/src/swayimg/`), Wayland, Vulkan, LuaBridge (016-fix-swayimg-gallery-loading)
 - In-memory thumbnail cache (`std::deque<ThumbEntry>`) + optional persistent storage (filesystem cache at `~/.cache/swayimg`) (016-fix-swayimg-gallery-loading)
+- C++20 (compiled with meson/ninja) + Wayland client libs, Vulkan, LuaBridge (Lua 5.4), pthreads, std::filesystem (013-inline-session-manager)
+- Session metadata files in `$XDG_DATA_HOME/swayimg/` (plain text, one path per line) (013-inline-session-manager)
+
+## Recent Changes
+- 013-inline-session-manager: Added C++20 (compiled with meson/ninja) + Wayland client libs, Vulkan, LuaBridge (Lua 5.4), pthreads, std::filesystem

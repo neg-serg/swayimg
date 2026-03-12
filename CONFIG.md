@@ -58,6 +58,9 @@ or in the file `/usr/share/swayimg/example.lua` after installing the program.
   * [swayimg.imagelist.enable_reverse](#swayimgimagelistenable_reverse): Enable or disable reverse order
   * [swayimg.imagelist.enable_recursive](#swayimgimagelistenable_recursive): Enable or disable recursive directory reading
   * [swayimg.imagelist.enable_adjacent](#swayimgimagelistenable_adjacent): Enable or disable opening adjacent files from the same directory
+  * [swayimg.imagelist.set_ignore_patterns](#swayimgimagelistset_ignore_patterns): Set directory/file names to skip during scanning
+* Session management
+  * [swayimg.session.set_mode](#swayimgsessionset_mode): Set session management mode
 * Text layer
   * [swayimg.text.set_font](#swayimgtextset_font): Set font face
   * [swayimg.text.set_size](#swayimgtextset_size): Set font size
@@ -449,6 +452,28 @@ swayimg.imagelist.enable_adjacent(enable: boolean)
 Enable or disable opening adjacent files from the same directory.
 
 @*param* `enable` — Enable/disable flag to set
+
+### swayimg.imagelist.set_ignore_patterns
+
+```lua
+swayimg.imagelist.set_ignore_patterns(patterns: string[])
+```
+
+Set directory/file name patterns to skip during directory scanning. Default patterns: `.git`, `.svn`, `.hg`, `.DS_Store`, `node_modules`. Pass an empty table to disable all ignore patterns.
+
+@*param* `patterns` — Array of directory/file names to skip
+
+## Session management
+
+### swayimg.session.set_mode
+
+```lua
+swayimg.session.set_mode(mode: "auto"|"on"|"off")
+```
+
+Set session management mode. In `auto` mode (default), session management activates automatically when exec:// commands are used. When active, swayimg creates session metadata files and sets environment variables (`SWAYIMG_SESSION_ID`, `SWAYIMG_FILELIST`, `SWAYIMG_RANGE_FILE`) for child processes.
+
+@*param* `mode` — Session mode: `auto` (activate on exec:// use), `on` (always active), `off` (disabled)
 
 ## Text layer
 

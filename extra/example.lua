@@ -9,6 +9,15 @@
 -- set order by file size for the image list
 swayimg.imagelist.set_order("size")
 
+-- skip VCS and build directories when scanning (these are the defaults)
+swayimg.imagelist.set_ignore_patterns({
+  ".git", ".svn", ".hg", ".DS_Store", "node_modules"
+})
+
+-- session management: "auto" (default), "on", or "off"
+-- in auto mode, activates when exec:// commands are used
+swayimg.session.set_mode("auto")
+
 -- set font size
 swayimg.text.set_size(32)
 -- set font color to fully opaque red color
