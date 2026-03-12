@@ -9,6 +9,7 @@
 #include "imagelist.hpp"
 #include "log.hpp"
 #include "render.hpp"
+#include "session.hpp"
 #include "slideshow.hpp"
 #include "text.hpp"
 #include "viewer.hpp"
@@ -25,6 +26,7 @@ constexpr const char* NS_IMAGELIST = "imagelist";
 constexpr const char* NS_VIEWER = "viewer";
 constexpr const char* NS_SLIDESHOW = "slideshow";
 constexpr const char* NS_GALLERY = "gallery";
+constexpr const char* NS_SESSION = "session";
 
 // app modes table: type to name
 static constexpr std::array appmodes =
@@ -258,6 +260,7 @@ void LuaEngine::initialize(const std::filesystem::path& config)
     bind_viewer_api(NS_VIEWER);
     bind_slideshow_api();
     bind_gallery_api();
+    bind_session_api();
 
     // load config file
     if (luaL_loadfile(lua_state, config_file.c_str()) != LUA_OK) {
@@ -493,6 +496,52 @@ void LuaEngine::bind_imagelist_api()
         .addFunction("enable_adjacent",
                      [](const bool enable) {
                          ImageList::self().adjacent = enable;
+                     })
+        .addFunction("set_ignore_patterns",
+                     [](const luabridge::LuaRef& table) {
+                         if (!table.isTable()) {
+                             show_error("set_ignore_patterns: expected table");
+                             return;
+                         }
+                         std::unordered_set<std::string> patterns;
+                         for (int i = 1; i <= table.length(); ++i) {
+                             const luabridge::LuaRef val = table[i];
+                             if (val.isString()) {
+                                 patterns.insert(
+                                     val.cast<std::string>().value());
+                             }
+                         }
+                         ImageList::self().set_ignore_patterns(
+                             std::move(patterns));
+                     })
+        .endNamespace()
+        .endNamespace();
+}
+
+void LuaEngine::bind_session_api()
+{
+    static constexpr std::array session_modes =
+        std::to_array<std::pair<Session::Mode, const char*>>({
+            { Session::Mode::Auto, "auto" },
+            { Session::Mode::On, "on" },
+            { Session::Mode::Off, "off" },
+        });
+
+    luabridge::getGlobalNamespace(lua_state)
+        .beginNamespace(NS_SWAYIMG)
+        .beginNamespace(NS_SESSION)
+        .addFunction("set_mode",
+                     [](const std::string& name) {
+                         for (const auto& [mode, mode_name] : session_modes) {
+                             if (name == mode_name) {
+                                 Session::self().set_mode(mode);
+                                 if (mode == Session::Mode::On) {
+                                     Session::self().mark_exec_used();
+                                 }
+                                 return;
+                             }
+                         }
+                         show_error("Invalid session mode: {}", name);
                      })
         .endNamespace()
         .endNamespace();

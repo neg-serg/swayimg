@@ -13,6 +13,7 @@
 #include "imagelist.hpp"
 #include "log.hpp"
 #include "luaengine.hpp"
+#include "session.hpp"
 #include "resources.hpp"
 #include "slideshow.hpp"
 #include "text.hpp"
@@ -62,12 +63,18 @@ Application::Application()
 
 int Application::run()
 {
+    // initialize session manager (before Lua, so config can set mode)
+    Session::self().initialize();
+
     // initialize and load Lua
     LuaEngine& lua = LuaEngine::self();
     lua.initialize(sparams.config);
     if (!sparams.lua_script.empty()) {
         lua.execute(sparams.lua_script);
     }
+
+    // activate session if auto-detection criteria met
+    Session::self().activate_if_needed();
 
     // initialize filemon and image list
     FsMonitor::self().initialize();
@@ -121,6 +128,9 @@ int Application::run()
 
     // Print frame profiling statistics
     FrameProfiler::instance().print_stats();
+
+    // Clean up session metadata files
+    Session::self().cleanup();
 
     return exit_code;
 }

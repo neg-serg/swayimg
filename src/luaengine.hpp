@@ -48,6 +48,7 @@ private:
     void bind_viewer_api(const char* name);
     void bind_slideshow_api();
     void bind_gallery_api();
+    void bind_session_api();
     void bind_appmode_api(const char* name);
 
     /**

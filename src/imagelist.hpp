@@ -14,6 +14,7 @@
 #include <list>
 #include <shared_mutex>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 /** Thread-safe list of images. */
@@ -257,7 +258,25 @@ private:
     std::vector<std::filesystem::path> pending_dirs; ///< Dirs to register with FsMonitor
     std::mutex pending_mutex;                       ///< Protects pending_entries/pending_dirs
 
+    /**
+     * Check if a directory entry should be ignored.
+     * @param entry_path path to check
+     * @return true if the entry should be skipped
+     */
+    bool should_ignore(const std::filesystem::path& entry_path) const;
+
 public:
     bool recursive = false; ///< Read directories recursively
     bool adjacent = false;  ///< Open adjacent files from the same directory
+
+    /**
+     * Set ignore patterns for directory scanning.
+     * @param patterns set of directory/file names to skip
+     */
+    void set_ignore_patterns(std::unordered_set<std::string> patterns);
+
+private:
+    std::unordered_set<std::string> ignore_patterns = {
+        ".git", ".svn", ".hg", ".DS_Store", "node_modules"
+    };
 };

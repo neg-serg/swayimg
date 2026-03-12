@@ -6,6 +6,7 @@
 
 #include "buildconf.hpp"
 #include "log.hpp"
+#include "session.hpp"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -89,6 +90,15 @@ static std::vector<uint8_t> read_stdout(const std::string& cmd)
         shell = "/bin/sh";
     }
 
+    // Activate session on first exec:// use (auto-detection)
+    if (!Session::self().is_active()) {
+        Session::self().mark_exec_used();
+        Session::self().activate_if_needed();
+    }
+
+    // Flush session file list before fork (on-demand)
+    Session::self().flush_filelist();
+
     const pid_t pid = fork();
     switch (pid) {
         case -1:
@@ -105,6 +115,16 @@ static std::vector<uint8_t> read_stdout(const std::string& cmd)
             close(fds_in[0]);
             dup2(fds_out[1], STDOUT_FILENO);
             close(fds_out[1]);
+
+            // set session env vars for action scripts
+            if (Session::self().is_active()) {
+                setenv("SWAYIMG_SESSION_ID",
+                       Session::self().get_session_id().c_str(), 1);
+                setenv("SWAYIMG_FILELIST",
+                       Session::self().get_filelist_path().c_str(), 1);
+                setenv("SWAYIMG_RANGE_FILE",
+                       Session::self().get_range_path().c_str(), 1);
+            }
 
             // skip clang-tidy check: we trust users's command
             // NOLINTNEXTLINE(clang-analyzer-optin.taint.GenericTaint)

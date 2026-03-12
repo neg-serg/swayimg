@@ -170,6 +170,9 @@ ImageEntryPtr ImageList::load(const std::vector<std::filesystem::path>& sources)
             try {
                 for (const auto& dir_entry :
                      std::filesystem::directory_iterator(abs_path)) {
+                    if (should_ignore(dir_entry.path())) {
+                        continue;
+                    }
                     const std::filesystem::path& sub_path = dir_entry.path();
                     if (std::filesystem::is_directory(sub_path)) {
                         if (recursive) {
@@ -192,6 +195,9 @@ ImageEntryPtr ImageList::load(const std::vector<std::filesystem::path>& sources)
                     const auto parent = abs_path.parent_path();
                     for (const auto& dir_entry :
                          std::filesystem::directory_iterator(parent)) {
+                        if (should_ignore(dir_entry.path())) {
+                            continue;
+                        }
                         const auto& sub_path = dir_entry.path();
                         if (!std::filesystem::is_directory(sub_path)) {
                             add_file(sub_path, false);
@@ -213,6 +219,9 @@ ImageEntryPtr ImageList::load(const std::vector<std::filesystem::path>& sources)
             try {
                 for (const auto& dir_entry :
                      std::filesystem::directory_iterator(dir)) {
+                    if (should_ignore(dir_entry.path())) {
+                        continue;
+                    }
                     const auto& sub_path = dir_entry.path();
                     if (std::filesystem::is_directory(sub_path)) {
                         bg_dirs.push_back(sub_path);
@@ -619,6 +628,9 @@ std::vector<ImageEntryPtr> ImageList::add_dir(const std::filesystem::path& path,
     try {
         FsMonitor::self().add(path);
         for (const auto& it : std::filesystem::directory_iterator(path)) {
+            if (should_ignore(it.path())) {
+                continue;
+            }
             const std::filesystem::path& sub_path = it.path();
             if (std::filesystem::is_directory(sub_path)) {
                 if (recursive) {
@@ -785,6 +797,9 @@ void ImageList::scan_directory(const std::filesystem::path& path)
             if (!scanning.load()) {
                 break;
             }
+            if (should_ignore(it.path())) {
+                continue;
+            }
             const std::filesystem::path& sub_path = it.path();
             if (std::filesystem::is_directory(sub_path)) {
                 // enqueue subdirectory as a new task
@@ -897,4 +912,14 @@ void ImageList::finish_scan()
     }
 
     Application::self().add_event(AppEvent::ScanComplete {});
+}
+
+bool ImageList::should_ignore(const std::filesystem::path& entry_path) const
+{
+    return ignore_patterns.contains(entry_path.filename().string());
+}
+
+void ImageList::set_ignore_patterns(std::unordered_set<std::string> patterns)
+{
+    ignore_patterns = std::move(patterns);
 }

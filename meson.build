@@ -305,6 +305,7 @@ sources = [
     'src/pixmap.cpp',
     'src/render.cpp',
     'src/resources.cpp',
+    'src/session.cpp',
     'src/slideshow.cpp',
     'src/text.cpp',
     'src/threadpool.cpp',
