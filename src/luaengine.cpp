@@ -464,6 +464,31 @@ void LuaEngine::bind_imagelist_api()
                              AppEvent::FileRemove { abs_path });
                      })
         .addFunction(
+            "delete",
+            [](const std::optional<std::string>& path_arg) {
+                std::filesystem::path abs_path;
+                if (path_arg.has_value()) {
+                    abs_path =
+                        std::filesystem::absolute(path_arg.value())
+                            .lexically_normal();
+                } else {
+                    ImageEntryPtr entry =
+                        Application::self().current_mode()->current_entry();
+                    if (!entry) {
+                        return;
+                    }
+                    abs_path = entry->path;
+                }
+                std::error_code ec;
+                if (std::filesystem::remove(abs_path, ec)) {
+                    Application::self().add_event(
+                        AppEvent::FileRemove { abs_path });
+                } else {
+                    show_error("Failed to delete {}: {}", abs_path.string(),
+                               ec.message());
+                }
+            })
+        .addFunction(
             "mark",
             [](const std::optional<bool>& state) {
                 ImageEntryPtr entry =
