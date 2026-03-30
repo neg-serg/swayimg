@@ -13,6 +13,7 @@
 #include <fstream>
 #include <mutex>
 #include <random>
+#include <set>
 #include <string>
 
 /**
@@ -331,7 +332,19 @@ ImageEntryPtr ImageList::load(const std::filesystem::path& list_file)
         }
     }
     reindex();
+
+    // Collect unique parent directories for filesystem monitoring.
+    std::set<std::filesystem::path> dirs;
+    for (const auto& entry : entries) {
+        dirs.insert(entry->path.parent_path());
+    }
+
     mutex.unlock();
+
+    // Register directories with FsMonitor (must be outside mutex lock).
+    for (const auto& dir : dirs) {
+        FsMonitor::self().add(dir);
+    }
 
     // No sort — order::none semantics for file-list input.
     // No background scanning — all entries are explicit file paths.
