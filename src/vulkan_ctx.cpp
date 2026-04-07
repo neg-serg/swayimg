@@ -359,7 +359,7 @@ bool VulkanCtx::create_command_pool()
 bool VulkanCtx::create_descriptor_pool()
 {
     const VkDescriptorPoolSize pool_sizes[] = {
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2048 },  // Audit R1: increased from 1024 to support 4GB VRAM budget
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096 },  // Supports up to 8GB VRAM budget with 2048 max entries
         { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 16 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 16 },
     };
@@ -449,8 +449,8 @@ size_t VulkanCtx::get_vram_budget() const
         }
     }
 
-    // 50% of device-local heap, capped at 4GB
-    constexpr size_t MAX_BUDGET = 4UL * 1024UL * 1024UL * 1024UL;
+    // 50% of device-local heap, capped at 8GB
+    constexpr size_t MAX_BUDGET = 8UL * 1024UL * 1024UL * 1024UL;
     const size_t budget = static_cast<size_t>(max_heap / 2);
     return std::min(budget, MAX_BUDGET);
 }
